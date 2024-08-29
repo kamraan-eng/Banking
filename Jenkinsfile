@@ -20,6 +20,13 @@ pipeline{
             }
         }
 
+          stage('Docker build'){
+            steps{
+                sh 'docker build -t financeproject .'
+                sh 'docker images'
+            }
+        }
+
 
     }
 }
