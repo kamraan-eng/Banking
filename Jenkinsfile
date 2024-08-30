@@ -27,6 +27,13 @@ pipeline{
             }
         }
 
+        stage('Docker Container running'){
+            steps{
+                sh 'docker run -d --name seethis -p 7777:8081 financeproject'
+                sh 'docker ps '
+            }
+        }
+
 
     }
 }
