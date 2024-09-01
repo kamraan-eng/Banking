@@ -98,6 +98,12 @@ pipeline {
             }
         }
 
+        stage('Removing existing Images and Container'){
+            steps{
+                sh ' docker rm -f $(docker ps -aq) '
+                sh ' docker rmi -f $(docker images -q) '
+            }
+        }
         
         stage('Docker Build') {
             steps {
