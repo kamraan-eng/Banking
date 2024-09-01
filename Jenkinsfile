@@ -113,7 +113,7 @@ pipeline {
 
         stage('Docker Push Image') {
             steps {
-                sh 'docker push ${DOCKERHUB_CREDENTIALS}/${IMAGE_NAME}:latest'
+                sh 'docker push nkcharan/${IMAGE_NAME}:latest'
             }
         }
     }
