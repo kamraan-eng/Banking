@@ -2,7 +2,10 @@ pipeline{
     agent any
     environment {
         MAVEN_HOME = tool name: 'maven', type: 'maven'
+        USERNAME = 'nkcharan'                
+        IMAGE_NAME = 'financeproject'
     }
+    
     stages{
         stage('Clone the Github repository'){
             steps{
@@ -14,8 +17,8 @@ pipeline{
             steps {
                 script {
                     echo "Maven Home: ${env.MAVEN_HOME}"
-                    sh "${MAVEN_HOME}/bin/mvn -version" // Check Maven version
-                    sh "${MAVEN_HOME}/bin/mvn clean package" // Run Maven build
+                    sh "${MAVEN_HOME}/bin/mvn -version" 
+                    sh "${MAVEN_HOME}/bin/mvn clean package" 
                 }
             }
         }
@@ -34,6 +37,19 @@ pipeline{
             }
         }
 
+        stage('Docker Login'){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials')]) {
+                    sh "docker login -u ${USERNAME} -p ${PASSWORD} registry.hub.docker.com"
+                }
+            }
+        }
+
+        stage('Pushing Image to the Docker-Hub'){
+            steps{
+             sh "docker push ${USERNAME}/${IMAGE_NAME}:latest"
+            }
+        }   
 
     }
 }
