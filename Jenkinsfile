@@ -3,6 +3,7 @@ pipeline{
     environment {
         MAVEN_HOME = tool name: 'maven', type: 'maven'           
         IMAGE_NAME = 'financeproject'
+        DOCKERHUB_CREDENTIALS = credentials('docker-creds')
     }
     
     stages{
@@ -24,31 +25,39 @@ pipeline{
 
           stage('Docker build'){
             steps{
-                sh 'docker build -t financeproject .'
+                sh 'docker build -t financeproject:latest .'
                 sh 'docker images'
             }
         }
 
         stage('Docker Container running'){
             steps{
-                sh 'docker run -d --name seethis -p 7777:8081 financeproject'
+                sh 'docker run -d --name seethis -p 7777:8081 financeproject:latest'
                 sh 'docker ps '
             }
         }
 
         stage('Docker Login'){
-            steps{
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials')]) {
-                    sh "docker login -u ${USERNAME} -p ${PASSWORD} registry.hub.docker.com"
+
+             steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
+                        echo 'Logged in to Docker Hub successfully'
+                    }
                 }
             }
         }
 
-        stage('Pushing Image to the Docker-Hub'){
-            steps{
-             sh "docker push nkcharan/financeproject:latest"
-            }
-        }   
+        stage('Docker build Image'){
+             script {
+                    // Define the Docker image name and tag
+                    def image = docker.build("financeproject:latest")
 
+                    // Optionally, push the image to Docker Hub
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
+                        image.push('latest')
+                    }
+                }
+        }
     }
 }
