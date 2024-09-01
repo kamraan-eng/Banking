@@ -87,6 +87,17 @@ pipeline {
             }
         }
 
+        stage('Docker Login') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    }
+                }
+            }
+        }
+
+        
         stage('Docker Build') {
             steps {
                 sh 'docker build -t ${IMAGE_NAME}:latest .'
@@ -96,18 +107,8 @@ pipeline {
 
         stage('Run Docker Container') {
             steps {
-                sh 'docker run -d --name seethis -p 8899:8081 ${IMAGE_NAME}:latest'
+                sh 'docker run -d --name seethis -p 7777:8081 ${IMAGE_NAME}:latest'
                 sh 'docker ps'
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-                    }
-                }
             }
         }
 
