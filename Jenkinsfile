@@ -101,27 +101,27 @@ pipeline {
         
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME} .'
+                sh 'docker build -t ${IMAGE_NAME}:v1 .'
                 sh 'docker images'
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}'
+                sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}:v1'
                 sh 'docker ps'
             }
         }
 
         stage('Creating the Image'){
             steps{
-                sh 'docker tag ${IMAGE_NAME} ${USER_NAME}/${IMAGE_NAME} '
+                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1 '
             }
         }
 
         stage('Docker Push Image') {
             steps {
-                sh 'docker push ${USER_NAME}/${IMAGE_NAME}'
+                sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v1'
             }
         }
     }
