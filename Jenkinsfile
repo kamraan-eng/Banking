@@ -67,6 +67,7 @@ pipeline {
     environment {
         MAVEN_HOME = tool name: 'maven', type: 'maven'
         IMAGE_NAME = 'financeproject'
+        USER_NAME = 'nkcharan'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
     }
     
@@ -100,21 +101,27 @@ pipeline {
         
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:latest .'
+                sh 'docker build -t ${IMAGE_NAME} .'
                 sh 'docker images'
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                sh 'docker run -d --name seethis -p 7777:8081 ${IMAGE_NAME}:latest'
+                sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}'
                 sh 'docker ps'
+            }
+        }
+
+        stage('Creating the Image'){
+            steps{
+                sh 'docker tag ${IMAGE_NAME} ${USER_NAME}/${IMAGE_NAME} '
             }
         }
 
         stage('Docker Push Image') {
             steps {
-                sh 'docker push nkcharan/${IMAGE_NAME}:latest'
+                sh 'docker push ${USER_NAME}/${IMAGE_NAME}'
             }
         }
     }
