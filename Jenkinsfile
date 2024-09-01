@@ -39,11 +39,7 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
-                        echo 'Logged in to Docker Hub successfully'
-                    }
-                }
+                sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
         }
 
