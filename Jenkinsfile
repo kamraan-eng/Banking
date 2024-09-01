@@ -60,53 +60,67 @@
 // }
 
 
-// new one
 
 pipeline {
     agent any
     
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-creds') // Using your Docker credentials
-        IMAGE_NAME = 'financeproject' // Your Docker image name
-        DOCKER_HUB_REPO = 'nkcharan/financeproject' // Your Docker Hub repository
-        DOCKER_TAG = 'latest' // Docker image tag
+        MAVEN_HOME = tool name: 'maven', type: 'maven'
+        IMAGE_NAME = 'financeproject'
+        DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
     }
-
+    
     stages {
-        stage('Docker Login') {
+        stage('Clone the GitHub repository') {
+            steps {
+                git branch: 'finance', credentialsId: 'github', url: 'https://github.com/charannk007/Staragile-Finance-New.git'
+            }
+        }
+
+        stage('Build the Project') {
             steps {
                 script {
-                    docker.withRegistry('', DOCKER_HUB_CREDENTIALS) {
-                        echo 'Logged in to Docker Hub'
-                    }
+                    echo "Maven Home: ${env.MAVEN_HOME}"
+                    sh "${MAVEN_HOME}/bin/mvn -version"
+                    sh "${MAVEN_HOME}/bin/mvn clean package"
                 }
             }
         }
-        
-        stage('Build Docker Image') {
+
+        stage('Docker Build') {
             steps {
-                script {
-                    docker.build("${DOCKER_HUB_REPO}:${DOCKER_TAG}")
-                }
+                sh 'docker build -t ${IMAGE_NAME}:latest .'
+                sh 'docker images'
             }
         }
 
         stage('Run Docker Container') {
             steps {
+                sh 'docker run -d --name seethis -p 8899:8081 ${IMAGE_NAME}:latest'
+                sh 'docker ps'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
                 script {
-                    sh "docker run -d --name my_container -p 8899:8081 ${DOCKER_HUB_REPO}:${DOCKER_TAG}"
-                    echo 'Docker container is running on port 8899'
+                    withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    }
                 }
             }
         }
-        
-        stage('Push to Docker Hub') {
+
+        stage('Docker Push Image') {
             steps {
                 script {
-                    docker.withRegistry('', DOCKER_HUB_CREDENTIALS) {
-                        docker.image("${DOCKER_HUB_REPO}:${DOCKER_TAG}").push()
+                    // Define the Docker image name and tag
+                    def image = docker.image("${IMAGE_NAME}:latest")
+
+                    // Push the image to Docker Hub
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
+                        image.push('latest')
                     }
-                    echo 'Docker image pushed to Docker Hub'
                 }
             }
         }
@@ -115,8 +129,8 @@ pipeline {
     post {
         always {
             script {
-                sh "docker stop my_container || true"
-                sh "docker rm my_container || true"
+                sh "docker stop seethis || true"
+                sh "docker rm seethis || true"
                 echo 'Cleaned up Docker container'
             }
         }
