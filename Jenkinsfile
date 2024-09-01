@@ -1,8 +1,7 @@
 pipeline{
     agent any
     environment {
-        MAVEN_HOME = tool name: 'maven', type: 'maven'
-        USERNAME = 'nkcharan'                
+        MAVEN_HOME = tool name: 'maven', type: 'maven'           
         IMAGE_NAME = 'financeproject'
     }
     
@@ -47,7 +46,7 @@ pipeline{
 
         stage('Pushing Image to the Docker-Hub'){
             steps{
-             sh "docker push ${USERNAME}/${IMAGE_NAME}:latest"
+             sh "docker push nkcharan/financeproject:latest"
             }
         }   
 
