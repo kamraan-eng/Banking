@@ -6,13 +6,12 @@ pipeline {
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
-        GIT_CREDENTIALS = credentials('github') // Assuming your GitHub credentials ID is 'github'
     }
     
     stages {
         stage('Clone the GitHub repository') {
             steps {
-                git branch: 'finance', credentialsId: "${GIT_CREDENTIALS}", url: 'https://github.com/charannk007/Staragile-Finance-New.git'
+                git branch: 'finance', credentialsId: 'github', url: 'https://github.com/charannk007/Staragile-Finance-New.git'
             }
         }
 
@@ -36,39 +35,36 @@ pipeline {
             }
         }
 
-        stage('Removing existing Images and Containers') {
-            steps {
-                script {
-                    // Remove only the container and image related to the current project
-                    sh 'docker rm -f projectcapstone || true'
-                    sh "docker rmi -f ${IMAGE_NAME}:v1 || true"
-                }
+        stage('Removing existing Images and Container'){
+            steps{
+                sh ' docker rm -f $(docker ps -aq) '
+                sh ' docker rmi -f $(docker images -q) '
             }
         }
-
+        
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:v1 .'
+                sh 'docker build -t ${IMAGE_NAME}:v2 .'
                 sh 'docker images'
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}:v1'
+                sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}:v2'
                 sh 'docker ps'
             }
         }
 
-        stage('Creating the Image') {
-            steps {
-                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1'
+        stage('Creating the Image'){
+            steps{
+                sh 'docker tag ${IMAGE_NAME}:v2 ${USER_NAME}/${IMAGE_NAME}:v2 '
             }
         }
 
         stage('Docker Push Image') {
             steps {
-                sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v1'
+                sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v2'
             }
         }
     }
