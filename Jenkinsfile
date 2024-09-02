@@ -68,12 +68,12 @@ pipeline {
             }
         }
 
-        stage('Run Docker Container') {
-            steps {
-                sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}:v2'
-                sh 'docker ps'
-            }
-        }
+        // stage('Run Docker Container') {
+        //     steps {
+        //         sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}:v2'
+        //         sh 'docker ps'
+        //     }
+        // }
 
         stage('Creating the Image') {
             steps {
