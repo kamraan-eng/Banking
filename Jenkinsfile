@@ -7,7 +7,7 @@ pipeline {
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
-        SSH_SERVER = 'kubes'
+        SSH_SERVER = 'kubeconfig'
     }
     
     stages {
