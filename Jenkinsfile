@@ -1,13 +1,13 @@
 pipeline {
     agent any
-    
+
     environment {
         MAVEN_HOME = tool name: 'maven', type: 'maven'
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
     }
-    
+
     stages {
         stage('Clone the GitHub repository') {
             steps {
@@ -35,13 +35,32 @@ pipeline {
             }
         }
 
-        stage('Removing existing Images and Container'){
-            steps{
-                sh ' docker rm -f $(docker ps -aq) '
-                sh ' docker rmi -f $(docker images -q) '
+        stage('Removing existing Images and Containers') {
+            steps {
+                script {
+                    // Remove existing containers if any
+                    sh """
+                    CONTAINERS=\$(docker ps -aq)
+                    if [ "\$CONTAINERS" ]; then
+                        docker rm -f \$CONTAINERS
+                    else
+                        echo "No containers to remove"
+                    fi
+                    """
+
+                    // Remove existing images if any
+                    sh """
+                    IMAGES=\$(docker images -q)
+                    if [ "\$IMAGES" ]; then
+                        docker rmi -f \$IMAGES
+                    else
+                        echo "No images to remove"
+                    fi
+                    """
+                }
             }
         }
-        
+
         stage('Docker Build') {
             steps {
                 sh 'docker build -t ${IMAGE_NAME}:v2 .'
@@ -56,9 +75,9 @@ pipeline {
             }
         }
 
-        stage('Creating the Image'){
-            steps{
-                sh 'docker tag ${IMAGE_NAME}:v2 ${USER_NAME}/${IMAGE_NAME}:v2 '
+        stage('Creating the Image') {
+            steps {
+                sh 'docker tag ${IMAGE_NAME}:v2 ${USER_NAME}/${IMAGE_NAME}:v2'
             }
         }
 
