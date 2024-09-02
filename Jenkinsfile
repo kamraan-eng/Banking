@@ -1,74 +1,13 @@
-// pipeline {
-//     agent any
-//     environment {
-//         MAVEN_HOME = tool name: 'maven', type: 'maven'
-//         IMAGE_NAME = 'financeproject'
-//         DOCKERHUB_CREDENTIALS = credentials('docker-creds')
-//     }
-    
-//     stages {
-//         stage('Clone the GitHub repository') {
-//             steps {
-//                 git branch: 'finance', credentialsId: 'github', url: 'https://github.com/charannk007/Staragile-Finance-New.git'
-//             }
-//         }
-
-//         stage('Build the Project') {
-//             steps {
-//                 script {
-//                     echo "Maven Home: ${env.MAVEN_HOME}"
-//                     sh "${MAVEN_HOME}/bin/mvn -version"
-//                     sh "${MAVEN_HOME}/bin/mvn clean package"
-//                 }
-//             }
-//         }
-
-//         stage('Docker Build') {
-//             steps {
-//                 sh 'docker build -t ${IMAGE_NAME}:latest .'
-//                 sh 'docker images'
-//             }
-//         }
-
-//         stage('Run Docker Container') {
-//             steps {
-//                 sh 'docker run -d --name seethis -p 7777:8081 ${IMAGE_NAME}:latest'
-//                 sh 'docker ps'
-//             }
-//         }
-
-//         stage('Docker Login') {
-//             steps {
-//                 sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-//             }
-//         }
-
-//         stage('Docker Build Image') {
-//             steps {
-//                 script {
-//                     // Define the Docker image name and tag
-//                     def image = docker.build("${IMAGE_NAME}:latest")
-
-//                     // Optionally, push the image to Docker Hub
-//                     docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
-//                         image.push('latest')
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-
-
 pipeline {
     agent any
     
     environment {
+        KUBE_CONFIG = credentials('kubeconfig') // Kubernetes config credentials
         MAVEN_HOME = tool name: 'maven', type: 'maven'
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
-        DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
+        DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
+        SSH_SERVER = 'kubes'
     }
     
     stages {
@@ -98,10 +37,10 @@ pipeline {
             }
         }
 
-        stage('Removing existing Images and Container'){
-            steps{
-                sh ' docker rm -f $(docker ps -aq) '
-                sh ' docker rmi -f $(docker images -q) '
+        stage('Removing Existing Images and Container') {
+            steps {
+                sh 'docker rm -f $(docker ps -aq) || true'
+                sh 'docker rmi -f $(docker images -q) || true'
             }
         }
         
@@ -119,9 +58,9 @@ pipeline {
             }
         }
 
-        stage('Creating the Image'){
-            steps{
-                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1 '
+        stage('Creating the Image') {
+            steps {
+                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1'
             }
         }
 
@@ -130,13 +69,24 @@ pipeline {
                 sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v1'
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withKubeConfig(credentialsId: 'kubeconfig') {
+                        sh 'kubectl apply -f deployment.yaml'
+                        sh 'kubectl apply -f service.yaml'
+                    }
+                }
+            }
+        }
     }
 
     post {
         always {
             script {
-                sh "docker stop seethis || true"
-                sh "docker rm seethis || true"
+                sh "docker stop projectcapstone || true"
+                sh "docker rm projectcapstone || true"
                 echo 'Cleaned up Docker container'
             }
         }
