@@ -70,17 +70,29 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+
+    stage('Delete Existing Kubernetes Resources') {
             steps {
                 script {
-                    withKubeConfig(credentialsId: 'kubeconfig') {
-                        sh 'kubectl apply -f deployment.yaml'
-                        sh 'kubectl apply -f service.yaml'
+                    sshagent([SSH_SERVER]) {                    
+                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl delete deployment capstone-project --ignore-not-found=true"'
+                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl delete service capstoneproject-service --ignore-not-found=true"'
                     }
                 }
             }
         }
+
+
+    stage('Deploy to Kubernetes') {
+    steps {
+        script {
+            sshagent([SSH_SERVER]) {
+                sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/deployment.yaml"'
+                sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/service.yaml"'
+            }
+        }
     }
+}
 
     post {
         always {
