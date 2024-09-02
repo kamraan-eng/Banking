@@ -70,11 +70,10 @@ pipeline {
             }
         }
 
-
-    stage('Delete Existing Kubernetes Resources') {
+        stage('Delete Existing Kubernetes Resources') {
             steps {
                 script {
-                    sshagent([SSH_SERVER]) {                    
+                    sshagent([SSH_SERVER]) {
                         sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl delete deployment capstone-project --ignore-not-found=true"'
                         sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl delete service capstoneproject-service --ignore-not-found=true"'
                     }
@@ -82,18 +81,18 @@ pipeline {
             }
         }
 
-
-    stage('Deploy to Kubernetes') {
-    steps {
-        script {
-            sshagent([SSH_SERVER]) {
-                sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/deployment.yaml"'
-                sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/service.yaml"'
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sshagent([SSH_SERVER]) {
+                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/deployment.yaml"'
+                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/service.yaml"'
+                    }
+                }
             }
         }
     }
-}
-
+    
     post {
         always {
             script {
