@@ -89,12 +89,8 @@ pipeline {
     }
 
     post {
-        always {
-            script {
-                sh "docker stop projectcapstone || true"
-                sh "docker rm projectcapstone || true"
-                echo 'Cleaned up Docker container'
-            }
+        success {
+            echo 'Pipeline completed successfully.'
         }
     }
 }
