@@ -6,12 +6,13 @@ pipeline {
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
+        GIT_CREDENTIALS = credentials('github') // Assuming your GitHub credentials ID is 'github'
     }
     
     stages {
         stage('Clone the GitHub repository') {
             steps {
-                git branch: 'finance', credentialsId: 'github', url: 'https://github.com/charannk007/Staragile-Finance-New.git'
+                git branch: 'finance', credentialsId: "${GIT_CREDENTIALS}", url: 'https://github.com/charannk007/Staragile-Finance-New.git'
             }
         }
 
@@ -35,13 +36,16 @@ pipeline {
             }
         }
 
-        stage('Removing existing Images and Container'){
-            steps{
-                sh ' docker rm -f $(docker ps -aq) '
-                sh ' docker rmi -f $(docker images -q) '
+        stage('Removing existing Images and Containers') {
+            steps {
+                script {
+                    // Remove only the container and image related to the current project
+                    sh 'docker rm -f projectcapstone || true'
+                    sh "docker rmi -f ${IMAGE_NAME}:v1 || true"
+                }
             }
         }
-        
+
         stage('Docker Build') {
             steps {
                 sh 'docker build -t ${IMAGE_NAME}:v1 .'
@@ -56,9 +60,9 @@ pipeline {
             }
         }
 
-        stage('Creating the Image'){
-            steps{
-                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1 '
+        stage('Creating the Image') {
+            steps {
+                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1'
             }
         }
 
@@ -72,8 +76,8 @@ pipeline {
     post {
         always {
             script {
-                sh "docker stop seethis || true"
-                sh "docker rm seethis || true"
+                sh "docker stop projectcapstone || true"
+                sh "docker rm projectcapstone || true"
                 echo 'Cleaned up Docker container'
             }
         }
