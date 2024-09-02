@@ -2,12 +2,10 @@ pipeline {
     agent any
     
     environment {
-        KUBE_CONFIG = credentials('kubeconfig') // Kubernetes config credentials
         MAVEN_HOME = tool name: 'maven', type: 'maven'
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
-        DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
-        SSH_SERVER = 'kubes'
+        DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
     }
     
     stages {
@@ -37,10 +35,10 @@ pipeline {
             }
         }
 
-        stage('Removing Existing Images and Container') {
-            steps {
-                sh 'docker rm -f $(docker ps -aq) || true'
-                sh 'docker rmi -f $(docker images -q) || true'
+        stage('Removing existing Images and Container'){
+            steps{
+                sh ' docker rm -f $(docker ps -aq) '
+                sh ' docker rmi -f $(docker images -q) '
             }
         }
         
@@ -58,9 +56,9 @@ pipeline {
             }
         }
 
-        stage('Creating the Image') {
-            steps {
-                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1'
+        stage('Creating the Image'){
+            steps{
+                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1 '
             }
         }
 
@@ -69,35 +67,13 @@ pipeline {
                 sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v1'
             }
         }
-
-        stage('Delete Existing Kubernetes Resources') {
-            steps {
-                script {
-                    sshagent([SSH_SERVER]) {
-                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl delete deployment capstone-project --ignore-not-found=true"'
-                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl delete service capstoneproject-service --ignore-not-found=true"'
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    sshagent([SSH_SERVER]) {
-                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/deployment.yaml"'
-                        sh 'ssh -o StrictHostKeyChecking=no kubes@kubes "kubectl apply -f /home/kubes/capstoneproject/service.yaml"'
-                    }
-                }
-            }
-        }
     }
-    
+
     post {
         always {
             script {
-                sh "docker stop projectcapstone || true"
-                sh "docker rm projectcapstone || true"
+                sh "docker stop seethis || true"
+                sh "docker rm seethis || true"
                 echo 'Cleaned up Docker container'
             }
         }
