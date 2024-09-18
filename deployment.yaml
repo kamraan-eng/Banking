@@ -1,3 +1,24 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: capstone-project
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: financeproject
+#   template:
+#     metadata:
+#       labels:
+#         app: financeproject
+#     spec:
+#       containers:
+#         - name: capstoneproject-container
+#           image: nkcharan/financeproject:v1
+#           ports:
+#             - containerPort: 8081
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,6 +33,16 @@ spec:
       labels:
         app: financeproject
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - ip-172-31-24-87  # Specify the worker nodes you want to use
+                      - ip-172-31-24-88
       containers:
         - name: capstoneproject-container
           image: nkcharan/financeproject:v1
