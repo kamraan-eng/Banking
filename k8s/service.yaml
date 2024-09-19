@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: capstoneproject-service
+  namespace: finance-stars-agiles  # Ensure the service is deployed in the correct namespace
+spec:
+  selector:
+    app: financeproject  # This should match the label of the Pod/Deployment
+  ports:
+    - protocol: TCP
+      port: 80  # Port that the service exposes (Cluster IP)
+      targetPort: 8081  # Port on the container that the traffic will be forwarded to
+      nodePort: 31000  # NodePort, ensure it's within the 30000-32767 range
+  type: NodePort  # The type of service (NodePort)
