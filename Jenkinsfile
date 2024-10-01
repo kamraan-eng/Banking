@@ -9,6 +9,8 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('Access-key')
         AWS_SECRET_ACCESS_KEY = credentials('Secret-access-key')
         TF_VERSION = "1.3.0"
+        ANSIBLE_USER = 'ansuser'
+        ANSIBLE_PASSWORD = '12345678'
 
     }
 
@@ -81,10 +83,10 @@ pipeline {
          stage('Using Ansible') {
             steps {
                 script {
+                    // Change user and run the ansible playbook with sudo, passing password
                     sh """
-                    # Change to the ansible user and run the playbook
-                    sudo su - ansuser -c '
-                        ansible-playbook ansible-playbook.yml 
+                    echo ${ANSIBLE_PASSWORD} | sudo -S su - ${ANSIBLE_USER} -c '
+                        ansible-playbook  ansible-playbook.yml
                     '
                     """
                 }
