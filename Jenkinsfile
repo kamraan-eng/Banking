@@ -80,8 +80,14 @@ pipeline {
 
          stage('Using Ansible') {
             steps {
-                // Apply the infrastructure configuration
-                sh 'ansible-playbook ansible-playbook.yml '
+                script {
+                    sh """
+                    # Change to the ansible user and run the playbook
+                    sudo su - ansuser -c '
+                        ansible-playbook ansible-playbook.yml 
+                    '
+                    """
+                }
             }
         }
     }
