@@ -57,19 +57,6 @@ pipeline {
             }
         }
 
-        stage('Install Terraform') {
-            steps {
-                // Install Terraform if not already installed
-                sh '''
-                if ! [ -x "$(command -v terraform)" ]; then
-                  wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
-                  unzip terraform_${TF_VERSION}_linux_amd64.zip
-                  sudo mv terraform /usr/local/bin/
-                fi
-                '''
-            }
-        }
-
         stage('Terraform Init') {
             steps {
                 // Initialize Terraform configuration files
