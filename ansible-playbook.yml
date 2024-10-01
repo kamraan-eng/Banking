@@ -1,16 +1,44 @@
-- name : Configure Docker on EC2 Instances
-  hosts : all
+# - name : Configure Docker on EC2 Instances
+#   hosts : all
+#   become: true
+#   connection : ssh
+#   tasks : 
+#   - name: updating apt
+#     command : sudo apt-get update
+#   - name : Install Docker
+#     command : sudo apt-get install -y docker.io
+#   - name : Start Docker Service
+#     command : sudo systemctl start docker
+#   - name: Deploy Docker Container
+#     command: docker run -itd -p 1234:8081 nkcharan/financeproject:v2
+- name: Configure Docker on EC2 Instances
+  hosts: all
   become: true
-  connection : ssh
-  tasks : 
-  - name: updating apt
-    command : sudo apt-get update
-
-  - name : Install Docker
-    command : sudo apt-get install -y docker.io
-
-  - name : Start Docker Service
-    command : sudo systemctl start docker
-
-  - name: Deploy Docker Container
-    command: docker run -itd -p 8084:8081 shubhamkushwah123/finance-me:1.0
+  connection: ssh
+  tasks:
+    - name: Update apt package manager
+      apt:
+        update_cache: yes
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+    - name: Add ansuser to Docker group
+      user:
+        name: ansuser
+        groups: docker
+        append: yes
+    - name: Start Docker Service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+    - name: Deploy Docker Container as ansuser
+      become_user: ansuser
+      docker_container:
+        name: financeproject
+        image: nkcharan/financeproject:v2
+        state: started
+        ports:
+          - "1234:8081"
+        detach: yes
