@@ -6,6 +6,8 @@ pipeline {
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
+        AWS_ACCESS_KEY_ID = credentials('Access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('Secret-access-key')
 
     }
 
@@ -53,15 +55,29 @@ pipeline {
                 sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v2'
             }
         }
+
+        stage('Terraform Init') {
+            steps {
+                // Initialize Terraform configuration files
+                sh 'terraform init'
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                // Plan the infrastructure deployment
+                sh 'terraform plan -out=tfplan'
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                // Apply the infrastructure configuration
+                sh 'terraform apply -auto-approve tfplan'
+            }
+        }
+     
     }
-
-
-
-
-
-
-
-
     post {
         success {
             echo 'Pipeline completed successfully.'
