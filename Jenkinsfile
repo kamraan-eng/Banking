@@ -40,20 +40,20 @@ pipeline {
         }
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:v2 .'
+                sh 'docker build -t ${IMAGE_NAME}:v3 .'
                 sh 'docker images'
             }
         }
 
         stage('Creating the Image') {
             steps {
-                sh 'docker tag ${IMAGE_NAME}:v2 ${USER_NAME}/${IMAGE_NAME}:v2'
+                sh 'docker tag ${IMAGE_NAME}:v2 ${USER_NAME}/${IMAGE_NAME}:v3'
             }
         }
 
         stage('Docker Push Image') {
             steps {
-                sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v2'
+                sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v3'
             }
         }
 
