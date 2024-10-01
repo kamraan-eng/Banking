@@ -47,7 +47,7 @@ pipeline {
 
         stage('Creating the Image') {
             steps {
-                sh 'docker tag ${IMAGE_NAME}:v2 ${USER_NAME}/${IMAGE_NAME}:v3'
+                sh 'docker tag ${IMAGE_NAME}:v3 ${USER_NAME}/${IMAGE_NAME}:v3'
             }
         }
 
