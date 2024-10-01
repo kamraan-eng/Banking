@@ -5,7 +5,8 @@ pipeline {
         MAVEN_HOME = tool name: 'maven', type: 'maven'
         IMAGE_NAME = 'financeproject'
         USER_NAME = 'nkcharan'
-        DOCKERHUB_CREDENTIALS = credentials('docker-creds') // Docker credentials ID
+        DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
+
     }
 
     stages {
@@ -34,46 +35,12 @@ pipeline {
                 }
             }
         }
-
-        stage('Removing existing Images and Containers') {
-            steps {
-                script {
-                    // Remove existing containers if any
-                    sh """
-                    CONTAINERS=\$(docker ps -aq)
-                    if [ "\$CONTAINERS" ]; then
-                        docker rm -f \$CONTAINERS
-                    else
-                        echo "No containers to remove"
-                    fi
-                    """
-
-                    // Remove existing images if any
-                    sh """
-                    IMAGES=\$(docker images -q)
-                    if [ "\$IMAGES" ]; then
-                        docker rmi -f \$IMAGES
-                    else
-                        echo "No images to remove"
-                    fi
-                    """
-                }
-            }
-        }
-
         stage('Docker Build') {
             steps {
                 sh 'docker build -t ${IMAGE_NAME}:v2 .'
                 sh 'docker images'
             }
         }
-
-        // stage('Run Docker Container') {
-        //     steps {
-        //         sh 'docker run -d --name projectcapstone -p 7777:8081 ${IMAGE_NAME}:v2'
-        //         sh 'docker ps'
-        //     }
-        // }
 
         stage('Creating the Image') {
             steps {
@@ -87,6 +54,13 @@ pipeline {
             }
         }
     }
+
+
+
+
+
+
+
 
     post {
         success {
