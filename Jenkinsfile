@@ -8,6 +8,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
         AWS_ACCESS_KEY_ID = credentials('Access-key')
         AWS_SECRET_ACCESS_KEY = credentials('Secret-access-key')
+        TF_VERSION = "1.3.0"
 
     }
 
@@ -56,6 +57,19 @@ pipeline {
             }
         }
 
+        stage('Install Terraform') {
+            steps {
+                // Install Terraform if not already installed
+                sh '''
+                if ! [ -x "$(command -v terraform)" ]; then
+                  wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+                  unzip terraform_${TF_VERSION}_linux_amd64.zip
+                  sudo mv terraform /usr/local/bin/
+                fi
+                '''
+            }
+        }
+
         stage('Terraform Init') {
             steps {
                 // Initialize Terraform configuration files
@@ -76,7 +90,6 @@ pipeline {
                 sh 'terraform apply -auto-approve tfplan'
             }
         }
-     
     }
     post {
         success {
