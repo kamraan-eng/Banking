@@ -77,6 +77,13 @@ pipeline {
                 sh 'terraform apply -auto-approve tfplan'
             }
         }
+
+         stage('Using Ansible') {
+            steps {
+                // Apply the infrastructure configuration
+                sh 'ansible-playbook ansible-playbook.yml '
+            }
+        }
     }
     post {
         success {
