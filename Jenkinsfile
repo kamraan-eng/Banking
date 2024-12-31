@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         MAVEN_HOME = tool name: 'maven', type: 'maven'
-        IMAGE_NAME = 'financeproject'
-        USER_NAME = 'nkcharan'
+        IMAGE_NAME = 'banking'
+        USER_NAME = 'kamraan'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
         AWS_ACCESS_KEY_ID = credentials('Access-key')
         AWS_SECRET_ACCESS_KEY = credentials('Secret-access-key')
@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage('Clone the GitHub repository') {
             steps {
-                git branch: 'finance', credentialsId: 'github', url: 'https://github.com/charannk007/Staragile-Finance-New.git'
+                git branch: 'finance', credentialsId: 'github', url: 'https://github.com/kamraan-eng/Banking.git'
             }
         }
 
@@ -42,20 +42,20 @@ pipeline {
         }
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:v3 .'
+                sh 'docker build -t ${IMAGE_NAME}:v1 .'
                 sh 'docker images'
             }
         }
 
         stage('Creating the Image') {
             steps {
-                sh 'docker tag ${IMAGE_NAME}:v3 ${USER_NAME}/${IMAGE_NAME}:v3'
+                sh 'docker tag ${IMAGE_NAME}:v1 ${USER_NAME}/${IMAGE_NAME}:v1'
             }
         }
 
         stage('Docker Push Image') {
             steps {
-                sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v3'
+                sh 'docker push ${USER_NAME}/${IMAGE_NAME}:v1'
             }
         }
 
