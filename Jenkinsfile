@@ -4,7 +4,7 @@ pipeline {
     environment {
         MAVEN_HOME = tool name: 'maven', type: 'maven'
         IMAGE_NAME = 'banking'
-        USER_NAME = 'kamraan'
+        USER_NAME = 'kamraan1'
         DOCKERHUB_CREDENTIALS = credentials('docker-creds') 
         AWS_ACCESS_KEY_ID = credentials('Access-key')
         AWS_SECRET_ACCESS_KEY = credentials('Secret-access-key')
