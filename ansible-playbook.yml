@@ -36,8 +36,8 @@
     - name: Deploy Docker Container as ansuser
       become_user: ansuser
       docker_container:
-        name: financeproject
-        image: nkcharan/financeproject:v2
+        name: banking
+        image: kamraan1/banking:v1
         state: started
         ports:
           - "1234:8081"
